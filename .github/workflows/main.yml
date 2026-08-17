@@ -1,0 +1,694 @@
+name: ci
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+  push:
+    branches: [3.x]
+
+concurrency:
+  # <workflow_name>-<branch_name>-<true || commit_sha if branch is protected>
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.ref_protected && github.sha || ''}}
+  cancel-in-progress: true
+
+env:
+  DO_NOT_TRACK: 1 # Disable Turbopack telemetry
+  NEXT_TELEMETRY_DISABLED: 1 # Disable Next telemetry
+
+jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      needs_build: ${{ steps.filter.outputs.needs_build }}
+      needs_tests: ${{ steps.filter.outputs.needs_tests }}
+      templates: ${{ steps.filter.outputs.templates }}
+      build_approvals: ${{ steps.filter.outputs.build_approvals }}
+    steps:
+      # https://github.com/actions/virtual-environments/issues/1187
+      - name: tune linux network
+        run: sudo ethtool -K eth0 tx off rx off
+
+      - uses: actions/checkout@v5
+      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        id: filter
+        with:
+          filters: |
+            needs_build:
+              - '.github/workflows/main.yml'
+              - 'packages/**'
+              - 'test/**'
+              - 'pnpm-lock.yaml'
+              - 'package.json'
+              - 'templates/**'
+            needs_tests:
+              - '.github/workflows/main.yml'
+              - '.github/actions/start-services/**'
+              - 'packages/**'
+              - 'test/**'
+              - 'pnpm-lock.yaml'
+              - 'package.json'
+            templates:
+              - 'templates/**'
+            build_approvals:
+              - '.github/workflows/main.yml'
+              # Any dependency-graph change (packages/* or the blank workspace member) lands in
+              # the root lockfile; that, plus the allowlist itself, is what can introduce drift.
+              - 'pnpm-lock.yaml'
+              - 'packages/create-payload-app/src/lib/configure-pnpm-builds.ts'
+      - name: Log filter results
+        run: |
+          echo "needs_build: ${{ steps.filter.outputs.needs_build }}"
+          echo "needs_tests: ${{ steps.filter.outputs.needs_tests }}"
+          echo "templates: ${{ steps.filter.outputs.templates }}"
+          echo "build_approvals: ${{ steps.filter.outputs.build_approvals }}"
+
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Node setup
+        uses: ./.github/actions/setup
+
+      - name: Lint TypeScript/JavaScript
+        run: pnpm lint -- --quiet
+
+      - name: Lint SCSS
+        run: pnpm run lint:scss
+
+  build:
+    needs: changes
+    if: needs.changes.outputs.needs_build == 'true'
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Node setup
+        uses: ./.github/actions/setup
+
+      - run: pnpm run build:all
+        env:
+          DO_NOT_TRACK: 1 # Disable Turbopack telemetry
+
+      - name: Cache build
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ./*
+          key: ${{ github.sha }}
+
+  tests-unit:
+    runs-on: ubuntu-24.04
+    needs: [changes, build]
+    if: needs.changes.outputs.needs_tests == 'true'
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Node setup
+        uses: ./.github/actions/setup
+        with:
+          restore-build: true
+
+      - name: Unit Tests
+        run: pnpm test:unit
+        env:
+          NODE_OPTIONS: --max-old-space-size=8096
+
+  tests-types:
+    runs-on: ubuntu-24.04
+    needs: [changes, build]
+    if: needs.changes.outputs.needs_tests == 'true'
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Node setup
+        uses: ./.github/actions/setup
+        with:
+          restore-build: true
+
+      - name: Types Tests
+        run: pnpm test:types --target '>=5.7'
+        env:
+          NODE_OPTIONS: --max-old-space-size=8096
+
+  # Generate the integration test matrix from TypeScript config
+  int-matrix:
+    name: Setup Int Matrix
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.generate.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            .github/workflows
+            .tool-versions
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .tool-versions
+
+      - name: Generate matrix
+        id: generate
+        run: |
+          matrix=$(node .github/workflows/int.config.ts)
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+
+  tests-int:
+    runs-on: ubuntu-24.04
+    needs: [changes, build, int-matrix]
+    if: needs.changes.outputs.needs_tests == 'true'
+    name: int-${{ matrix.database }}${{ matrix.total-shards > 1 && format(' ({0}/{1})', matrix.shard, matrix.total-shards) || '' }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.int-matrix.outputs.matrix) }}
+
+    env:
+      AWS_ENDPOINT_URL: http://127.0.0.1:4566
+      AWS_ACCESS_KEY_ID: localstack
+      AWS_SECRET_ACCESS_KEY: localstack
+      AWS_REGION: us-east-1
+
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+
+        options: --health-cmd "redis-cli ping" --health-timeout 30s --health-retries 3
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Node setup
+        uses: ./.github/actions/setup
+        with:
+          restore-build: true
+
+      - name: Configure Redis
+        run: |
+          echo "REDIS_URL=redis://127.0.0.1:6379" >> $GITHUB_ENV
+
+      - name: Start services
+        id: db
+        uses: ./.github/actions/start-services
+        with:
+          database: ${{ matrix.database }}
+
+      - name: Integration Tests
+        run: pnpm test:int --shard=${{ matrix.shard }}/${{ matrix.total-shards }}
+        env:
+          NODE_OPTIONS: --max-old-space-size=8096
+          PAYLOAD_DATABASE: ${{ matrix.database }}
+          POSTGRES_URL: ${{ steps.db.outputs.POSTGRES_URL }}
+          MONGODB_URL: ${{ steps.db.outputs.MONGODB_URL }}
+          MONGODB_ATLAS_URL: ${{ steps.db.outputs.MONGODB_ATLAS_URL }}
+
+  # Generate the E2E test matrix from TypeScript config
+  e2e-matrix:
+    name: Setup E2E Matrix
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.generate.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            .github/workflows
+            .tool-versions
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .tool-versions
+
+      - name: Generate matrix
+        id: generate
+        run: |
+          matrix=$(node .github/workflows/e2e.config.ts)
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+
+  # Prepare prod test environment once, shared by all E2E shards
+  e2e-prep:
+    name: E2E Prep
+    runs-on: ubuntu-24.04
+    needs: [changes, build]
+    if: needs.changes.outputs.needs_tests == 'true'
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Node setup
+        uses: ./.github/actions/setup
+        with:
+          restore-build: true
+
+      - name: Prepare prod test environment
+        run: pnpm prepare-run-test-against-prod:ci
+
+      # Tar first: upload-artifact is extremely slow with pnpm node_modules (many small files + symlinks).
+      - name: Archive prepared test environment
+        run: tar --zstd -cf e2e-prep.tar.zst test/packed test/node_modules test/package.json test/pnpm-lock.yaml
+
+      # Artifact (not cache) so that re-runs of individual E2E shards survive the 10 GB cache LRU eviction.
+      - name: Upload prepared test environment
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-prep-${{ github.sha }}
+          path: e2e-prep.tar.zst
+          if-no-files-found: error
+
+  tests-e2e:
+    runs-on: ubuntu-24.04
+    needs: [e2e-matrix, e2e-prep]
+    name: E2E - ${{ matrix.suite }}${{ matrix.total-shards > 1 && format(' ({0}/{1})', matrix.shard, matrix.total-shards) || '' }}${{ matrix.cacheComponents && ' [cacheComponents]' || '' }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.e2e-matrix.outputs.matrix) }}
+    env:
+      SUITE_NAME: ${{ matrix.suite }}
+      PAYLOAD_CACHE_COMPONENTS: ${{ matrix.cacheComponents && 'true' || '' }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Node setup
+        uses: ./.github/actions/setup
+        with:
+          restore-build: true
+
+      - name: Download prepared test environment
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: e2e-prep-${{ github.sha }}
+          path: .
+
+      - name: Extract prepared test environment
+        shell: bash
+        run: |
+          if [ ! -f e2e-prep.tar.zst ]; then
+            echo "::error::The 'e2e-prep-${{ github.sha }}' artifact did not contain e2e-prep.tar.zst."
+            echo "::error::This usually means the 'E2E Prep' job did not run or failed to upload."
+            echo "::error::Re-run the entire workflow so 'E2E Prep' regenerates the artifact."
+            exit 1
+          fi
+          tar --zstd -xf e2e-prep.tar.zst
+          rm e2e-prep.tar.zst
+          if [ ! -d test/packed ] || [ ! -d test/node_modules ]; then
+            echo "::error::Extracted artifact is missing expected directories (test/packed or test/node_modules)."
+            exit 1
+          fi
+
+      - name: Start services
+        id: db
+        uses: ./.github/actions/start-services
+        with:
+          database: mongodb
+
+      - name: Store Playwright's Version
+        run: |
+          # `exit` after the first match: v11's `pnpm ls` lists the dep across every workspace
+          # project, and a multi-line value would break the GITHUB_ENV write.
+          PLAYWRIGHT_VERSION=$(pnpm ls @playwright/test --depth=0 | awk '/@playwright\/test/ {print $2; exit}')
+          echo "Playwright's Version: $PLAYWRIGHT_VERSION"
+          echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
+
+      - name: Cache Playwright Browsers for Playwright's Version
+        id: cache-playwright-browsers
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-browsers-${{ env.PLAYWRIGHT_VERSION }}
+
+      - name: Setup Playwright - Browsers and Dependencies
+        if: steps.cache-playwright-browsers.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps chromium --no-shell
+
+      - name: Setup Playwright - Dependencies-only
+        if: steps.cache-playwright-browsers.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium
+
+      - name: E2E Tests
+        # E2E Test Execution Strategy:
+        #
+        # The e2e.config.ts defines each test suite with: { file, shards, parallel? }
+        # - shards: Number of CI runners to split this suite across
+        # - parallel: Whether tests within the suite can run concurrently (default: false)
+        #
+        # Flags explained:
+        # - --fully-parallel: Enables test-level sharding (distributes individual tests across shards,
+        #   not just files). There is an arbitrary limitation that disables sharding if fullyParallel
+        #   is not set.
+        # - --workers=1: Forces serial execution within each shard. Added when parallel=false.
+        #
+        # How it works:
+        # - Most suites: parallel=false → tests run serially (--workers=1) but are sharded across runners
+        # - Parallel suites (e.g. LexicalFullyFeatured): parallel=true → tests run concurrently within each shard
+        #
+        # Local vs CI behavior:
+        # - Locally: playwright.config.ts has workers=16. Without --fully-parallel, Playwright
+        #   runs tests serially by default (one test at a time per file). Suites with
+        #   test.describe.configure({ mode: 'parallel' }) opt into parallel execution.
+        # - CI: We must use --fully-parallel to enable test-level sharding across runners.
+        #   However, --fully-parallel would also run all tests in parallel within each shard.
+        #   To maintain serial execution for most suites, we pass --workers=1 when parallel=false.
+        #   Suites with parallel=true (e.g. LexicalFullyFeatured) use the default 16 workers.
+        #
+        # Note: The e2e-prep job runs prepare-run-test-against-prod:ci once and uploads the result
+        # as an artifact. This job downloads that artifact, so we use test:e2e:prod:run which skips preparation.
+        run: PLAYWRIGHT_JSON_OUTPUT_NAME=results_${{ matrix.suite }}_${{ matrix.shard }}.json pnpm test:e2e:prod:run ${{ matrix.suite }} --shard=${{ matrix.shard }}/${{ matrix.total-shards }} --fully-parallel${{ matrix.parallel == false && ' --workers=1' || '' }}
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: results_${{ matrix.suite }}_${{ matrix.shard }}.json
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: test-results-${{ matrix.suite }}_${{ matrix.shard }}${{ matrix.cacheComponents && '_cc' || '' }}
+          path: test/test-results/
+          if-no-files-found: ignore
+          retention-days: 1
+
+      # Disabled until this is fixed: https://github.com/daun/playwright-report-summary/issues/156
+      # - uses: daun/playwright-report-summary@v3
+      #   with:
+      #     report-file: results_${{ matrix.suite }}.json
+      #     report-tag: ${{ matrix.suite }}
+      #     job-summary: true
+
+  # Build listed templates with packed local packages and then runs their int and e2e tests
+  build-and-test-templates:
+    runs-on: ubuntu-24.04
+    needs: [changes, build]
+    if: needs.changes.outputs.needs_build == 'true'
+    name: build-template-${{ matrix.template }}-${{ matrix.database }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - template: blank
+            database: mongodb
+
+          - template: website
+            database: mongodb
+
+          - template: with-vercel-mongodb
+            database: mongodb
+
+          # Postgres
+          - template: with-postgres
+            database: postgres
+
+          - template: with-vercel-postgres
+            database: postgres
+
+          - template: plugin
+
+          # Re-enable once PG conncection is figured out
+          # - template: with-vercel-website
+          #   database: postgres
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Node setup
+        uses: ./.github/actions/setup
+        with:
+          restore-build: true
+
+      - name: Start services
+        id: db
+        if: matrix.database
+        uses: ./.github/actions/start-services
+        with:
+          database: ${{ matrix.database }}
+
+      - name: Build Template
+        run: |
+          pnpm run script:pack --all --dest templates/${{ matrix.template }}
+          pnpm run script:build-template-with-local-pkgs ${{ matrix.template }} $DB_CONNECTION
+        env:
+          NODE_OPTIONS: --max-old-space-size=8096
+          DB_CONNECTION: ${{ steps.db.outputs.POSTGRES_URL || steps.db.outputs.MONGODB_URL }}
+
+      - name: Store Playwright's Version
+        run: |
+          # `exit` after the first match: v11's `pnpm ls` lists the dep across every workspace
+          # project, and a multi-line value would break the GITHUB_ENV write.
+          PLAYWRIGHT_VERSION=$(pnpm ls @playwright/test --depth=0 | awk '/@playwright\/test/ {print $2; exit}')
+          echo "Playwright's Version: $PLAYWRIGHT_VERSION"
+          echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
+
+      - name: Cache Playwright Browsers for Playwright's Version
+        id: cache-playwright-browsers
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-browsers-${{ env.PLAYWRIGHT_VERSION }}
+
+      - name: Setup Playwright - Browsers and Dependencies
+        if: steps.cache-playwright-browsers.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Setup Playwright - Dependencies-only
+        if: steps.cache-playwright-browsers.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium
+
+      - name: Runs Template Int Tests
+        run: pnpm --filter ${{ matrix.template }} run test:int
+        env:
+          NODE_OPTIONS: --max-old-space-size=8096
+          PAYLOAD_DATABASE: ${{ matrix.database }}
+          POSTGRES_URL: ${{ steps.db.outputs.POSTGRES_URL }}
+          MONGODB_URL: ${{ steps.db.outputs.MONGODB_URL }}
+
+      - name: Runs Template E2E Tests
+        run: PLAYWRIGHT_JSON_OUTPUT_NAME=results_${{ matrix.template }}.json pnpm --filter ${{ matrix.template }} test:e2e
+        env:
+          NODE_OPTIONS: --max-old-space-size=8096
+          PAYLOAD_DATABASE: ${{ matrix.database }}
+          POSTGRES_URL: ${{ steps.db.outputs.POSTGRES_URL }}
+          MONGODB_URL: ${{ steps.db.outputs.MONGODB_URL }}
+          NEXT_TELEMETRY_DISABLED: 1
+
+  # Fails if create-payload-app's build-script allowlist drifts from the blank template's deps:
+  # scaffolds blank, installs it standalone under pnpm v11, and asserts no ERR_PNPM_IGNORED_BUILDS.
+  check-template-build-approvals:
+    runs-on: ubuntu-24.04
+    needs: [changes, build]
+    if: needs.changes.outputs.build_approvals == 'true'
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Node setup
+        uses: ./.github/actions/setup
+
+      - name: Check create-payload-app build approvals
+        run: pnpm --filter scripts check-template-build-approvals
+
+  tests-type-generation:
+    runs-on: ubuntu-24.04
+    needs: [changes, build]
+    if: needs.changes.outputs.needs_tests == 'true'
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Node setup
+        uses: ./.github/actions/setup
+        with:
+          restore-build: true
+
+      - name: Generate Payload Types
+        run: pnpm dev:generate-types fields
+
+      - name: Generate GraphQL schema file
+        run: pnpm dev:generate-graphql-schema graphql-schema-gen
+
+  # Test content-api integration with packed packages. Each job runs its own
+  # ephemeral Content API instance pulled from Figma's ECR, backed by a Postgres
+  # service container and a LocalStack container for S3 storage tests. This
+  # gives each run an isolated sandbox, avoiding data collisions between
+  # concurrent CI runs and removing the need for shared credentials.
+  tests-content-api:
+    name: Content API Tests
+    runs-on: ubuntu-24.04
+    needs: [changes, build]
+    # Skip fork PRs: this job uses credentials fork workflows must not reach.
+    if: needs.changes.outputs.needs_tests == 'true' && github.event.pull_request.head.repo.fork == false
+    # Non-blocking while adapter coverage is incomplete. Once the full suite
+    # passes, migrate to the `tests-int` matrix pattern (`pnpm test:int`
+    # with --shard); `test:int:summary` cannot shard.
+    continue-on-error: true
+    permissions:
+      id-token: write
+      contents: read
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: figma_content_api
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      localstack:
+        image: localstack/localstack:4.10.0
+        env:
+          SERVICES: s3
+        ports:
+          - 4566:4566
+        options: >-
+          --health-cmd "curl -f http://localhost:4566/_localstack/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Node setup
+        uses: ./.github/actions/setup
+        with:
+          restore-build: true
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::060562746757:role/content-api-external-ci-pull
+          aws-region: us-west-2
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Figma publishes ECR tags as the 40-char SHA of the figma/figma commit
+      # that built the image. There is no reliable floating alias, so pick the
+      # most recently pushed SHA tag (skipping cosign `.sig` signatures).
+      # `--max-results 100 --no-paginate` bounds the call to a single page;
+      # without it the CLI pages through the full history and takes ~50s.
+      - name: Resolve latest Content API image tag
+        id: resolve-image
+        run: |
+          TAG=$(aws ecr describe-images \
+            --repository-name payload/content-api \
+            --region us-west-2 \
+            --max-results 100 \
+            --no-paginate \
+            --query 'reverse(sort_by(imageDetails,& imagePushedAt))[].imageTags[]' \
+            --output text | tr '\t' '\n' | grep -E '^[a-f0-9]{40}$' | head -n1)
+          if [ -z "$TAG" ]; then
+            echo "::error::No git-SHA-like tag found in payload/content-api ECR"
+            exit 1
+          fi
+          echo "Using tag: $TAG"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      # Cache the image tarball by resolved SHA so repeated runs on the same
+      # figma/figma image skip the ~55s ECR pull.
+      - name: Cache Content API image
+        id: cache-content-api-image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/content-api-image.tar
+          key: content-api-image-${{ steps.resolve-image.outputs.tag }}
+
+      - name: Start Content API
+        run: |
+          IMAGE=060562746757.dkr.ecr.us-west-2.amazonaws.com/payload/content-api:${{ steps.resolve-image.outputs.tag }}
+          if [ -f /tmp/content-api-image.tar ]; then
+            echo "Loading Content API image from cache"
+            docker load -i /tmp/content-api-image.tar
+          else
+            echo "Pulling Content API image from ECR"
+            docker pull "$IMAGE"
+            docker save -o /tmp/content-api-image.tar "$IMAGE"
+          fi
+          docker run -d \
+            --name content-api \
+            --network host \
+            -e DATABASE_URL="postgresql://postgres:postgres@localhost:5432/figma_content_api" \
+            -e NODE_ENV=development \
+            -e TARGET_ENV=development \
+            -e CONTENT_API_PORT=8080 \
+            -e S3_ENDPOINT=http://localhost:4566 \
+            "$IMAGE"
+
+      - name: Wait for Content API to be ready
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:8080/health > /dev/null; then
+              echo "Content API is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Content API failed to start within timeout"
+          docker logs content-api || true
+          exit 1
+
+      - name: Run Content API Integration Tests
+        continue-on-error: true
+        run: pnpm test:int:summary
+        env:
+          NODE_OPTIONS: --max-old-space-size=8096
+          PAYLOAD_DATABASE: content-api
+
+      - name: Dump Content API logs on failure
+        if: failure()
+        run: docker logs content-api || true
+
+  all-green:
+    name: All Green
+    if: always()
+    runs-on: ubuntu-24.04
+    needs:
+      [
+        lint,
+        build,
+        build-and-test-templates,
+        tests-unit,
+        tests-int,
+        tests-e2e,
+        tests-types,
+        tests-type-generation,
+        tests-content-api,
+      ]
+
+    steps:
+      - if: ${{ always() && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) }}
+        run: exit 1
+
+  analyze:
+    runs-on: ubuntu-latest
+    needs: [changes, build]
+    timeout-minutes: 5
+    permissions:
+      contents: read # for checkout repository
+      actions: read # for fetching base branch bundle stats
+      pull-requests: write # for comments
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Node setup
+        uses: ./.github/actions/setup
+        with:
+          restore-build: true
+
+      - run: pnpm run build:bundle-for-analysis # Esbuild packages that haven't already been built in the build step for the purpose of analyzing bundle size
+        env:
+          DO_NOT_TRACK: 1 # Disable Turbopack telemetry
+
+      - name: Analyze esbuild bundle size
+        # Temporarily disable this for community PRs until this can be implemented in a separate workflow
+        if: github.event.pull_request.head.repo.fork == false
+        uses: exoego/esbuild-bundle-analyzer@v1
+        with:
+          metafiles: 'packages/payload/meta_index.json,packages/payload/meta_shared.json,packages/ui/meta_client.json,packages/ui/meta_shared.json,packages/next/meta_index.json,packages/richtext-lexical/meta_client.json'
