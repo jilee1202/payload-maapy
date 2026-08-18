@@ -363,3 +363,13 @@ payload.db
 test/evals/eval-results/report.html
 # Versioned eval run snapshots (local only — used for run comparison in dashboard)
 test/evals/eval-results/runs/
+
+# ── 우리 보정 (2026-08-18) ────────────────────────────────
+# upstream 은 .idea 안의 IntelliJ 설정 4개를 일부러 추적한다(위 4~7행).
+# 그러나 우리 작업 폴더는 SSD 미러링으로 집·회사 PC를 오가고,
+# 미러링 제외 목록(ssd_robo.bat)에 .idea 가 들어 있어 그 4개가 실려오지 않는다.
+# 그대로 두면 PC 를 옮길 때마다 git 이 "파일 4개 삭제됨"으로 보고,
+# 그 삭제가 에이전트의 변경에 섞여 PR 에 올라갈 수 있다.
+# 우리는 IntelliJ 를 쓰지 않으므로 추적에서 뺀다. 파일은 디스크에 그대로 있다.
+# 되돌리려면 이 블록을 지우고  git add -f .idea  를 실행한다.
+/.idea/
