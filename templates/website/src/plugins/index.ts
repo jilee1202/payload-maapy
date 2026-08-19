@@ -91,12 +91,11 @@ export const plugins: Plugin[] = [
     },
   }),
   importExportPlugin({
-    collections: ['posts'],
-    csv: {
-      enabled: true,
-    },
-    json: {
-      enabled: false,
-    },
+    collections: [
+      {
+        slug: 'posts',
+        export: { format: 'csv' },
+      },
+    ],
   }),
 ]
