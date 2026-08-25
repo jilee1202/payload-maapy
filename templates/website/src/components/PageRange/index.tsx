@@ -1,14 +1,14 @@
 import React from 'react'
 
 const defaultLabels = {
-  plural: 'Docs',
-  singular: 'Doc',
+  plural: '글',
+  singular: '글',
 }
 
 const defaultCollectionLabels = {
   posts: {
-    plural: 'Posts',
-    singular: 'Post',
+    plural: '글',
+    singular: '글',
   },
 }
 
@@ -46,12 +46,12 @@ export const PageRange: React.FC<{
 
   return (
     <div className={[className, 'font-semibold'].filter(Boolean).join(' ')}>
-      {(typeof totalDocs === 'undefined' || totalDocs === 0) && 'Search produced no results.'}
+      {(typeof totalDocs === 'undefined' || totalDocs === 0) && '검색 결과가 없습니다.'}
       {typeof totalDocs !== 'undefined' &&
         totalDocs > 0 &&
-        `Showing ${indexStart}${indexStart > 0 ? ` - ${indexEnd}` : ''} of ${totalDocs} ${
+        `총 ${totalDocs}개 ${
           totalDocs > 1 ? plural : singular
-        }`}
+        } 중 ${indexStart}${indexStart > 0 ? ` - ${indexEnd}` : ''}번째`}
     </div>
   )
 }
