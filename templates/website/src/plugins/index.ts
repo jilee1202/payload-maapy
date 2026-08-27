@@ -28,19 +28,30 @@ const generateURL: GenerateURL<Post | Page> = ({ doc }) => {
 const lockMcpApiKeys: Plugin = (config) => {
   const apiKeys = config.collections?.find(({ slug }) => slug === 'payload-mcp-api-keys')
 
-  if (apiKeys) {
-    apiKeys.access = {
-      ...(apiKeys.access ?? {}),
-      admin: authenticated,
-      create: authenticated,
-      delete: authenticated,
-      read: authenticated,
-      update: authenticated,
-    }
+  // ⚠️ 못 찾으면 조용히 넘어가지 않는다. 그러면 키 컬렉션이 열린 채로 배포된다 —
+  //    실제로 한 번 그렇게 새어나갔다(2026-08-29). 잠금은 실패하면 멈춰야 한다.
+  if (!apiKeys) {
+    throw new Error(
+      '[lockMcpApiKeys] payload-mcp-api-keys 컬렉션을 못 찾았다. ' +
+        'mcpPlugin 보다 먼저 돌았거나 슬러그가 바뀌었다 — order 를 확인한다.',
+    )
+  }
+
+  apiKeys.access = {
+    ...(apiKeys.access ?? {}),
+    admin: authenticated,
+    create: authenticated,
+    delete: authenticated,
+    read: authenticated,
+    update: authenticated,
   }
 
   return config
 }
+
+// ⚠️ Payload 는 플러그인을 `order` 오름차순으로 돈다(기본 0). `mcpPlugin` 이 `order: 10` 이라
+//    이 값을 안 주면 우리가 먼저 돌아 컬렉션이 아직 없다. 배열 순서가 아니라 이 숫자가 순서다.
+lockMcpApiKeys.order = 20
 
 export const plugins: Plugin[] = [
   redirectsPlugin({
