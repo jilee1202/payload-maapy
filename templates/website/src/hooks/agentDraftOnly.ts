@@ -1,4 +1,4 @@
-import type { CollectionBeforeOperationHook, PayloadRequest } from 'payload'
+import type { CollectionBeforeOperationHook, CollectionSlug, PayloadRequest } from 'payload'
 
 import { Forbidden } from 'payload'
 
@@ -8,8 +8,8 @@ import { Forbidden } from 'payload'
  * MCP 엔드포인트가 `req.payloadAPI = 'MCP'` 를 찍고, 키에 연결된 사용자에 `_strategy` 를 단다.
  * 둘 다 본다 — 하나가 바뀌어도 잠금이 조용히 풀리지 않게.
  *
- * ⚠️ 관리자 화면에서 사람이 하는 일과는 갈린다. MCP 안에서 에이전트는 연결된 계정
- *    (= 주일님 계정)으로 행세하므로 **사용자만 봐서는 못 가른다.** 문이 무엇인지를 봐야 한다.
+ * ⚠️ 관리자 화면에서 사람이 하는 일과는 갈린다. MCP 안에서 에이전트는 키에 연결된 계정
+ *    (= 주일님 계정)으로 행세하므로 **사용자만 봐서는 못 가른다.** 어느 문으로 왔는지를 봐야 한다.
  */
 const isAgentRequest = (req: PayloadRequest): boolean => {
   const api = (req as { payloadAPI?: string }).payloadAPI
@@ -31,25 +31,30 @@ const isAgentRequest = (req: PayloadRequest): boolean => {
  *    판정 자체는 이미 끝나 있다. `beforeOperation` 은 그 판정 **앞**이라 `draft` 를 뒤집을 수 있다.
  *
  * ⚠️ **삭제는 초안이라는 것이 없다.** 되돌릴 방법이 없으므로 아예 막는다.
+ *
+ * ⚠️ **컬렉션마다 슬러그를 박아 쓴다** — `agentDraftOnly<'posts'>()`.
+ *    훅 타입이 슬러그를 물고 있어 하나로 돌려쓰면 타입이 안 맞는다(CI 에서 걸렸다).
  */
-export const agentDraftOnly: CollectionBeforeOperationHook = ({ args, operation, req }) => {
-  if (!isAgentRequest(req)) {
-    return
+export const agentDraftOnly =
+  <TSlug extends CollectionSlug>(): CollectionBeforeOperationHook<TSlug> =>
+  ({ args, operation, req }) => {
+    if (!isAgentRequest(req)) {
+      return
+    }
+
+    if (operation === 'delete') {
+      throw new Forbidden(req.t)
+    }
+
+    if (operation !== 'create' && operation !== 'update') {
+      return
+    }
+
+    const incoming = args as { data?: Record<string, unknown>; draft?: boolean }
+
+    return {
+      ...incoming,
+      ...(incoming.data ? { data: { ...incoming.data, _status: 'draft' } } : {}),
+      draft: true,
+    } as ReturnType<CollectionBeforeOperationHook<TSlug>>
   }
-
-  if (operation === 'delete') {
-    throw new Forbidden(req.t)
-  }
-
-  if (operation !== 'create' && operation !== 'update') {
-    return
-  }
-
-  const incoming = args as { data?: Record<string, unknown>; draft?: boolean }
-
-  return {
-    ...incoming,
-    ...(incoming.data ? { data: { ...incoming.data, _status: 'draft' } } : {}),
-    draft: true,
-  } as typeof args
-}

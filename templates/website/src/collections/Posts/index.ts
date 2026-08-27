@@ -222,7 +222,7 @@ export const Posts: CollectionConfig<'posts'> = {
     afterRead: [populateAuthors],
     afterDelete: [revalidateDelete],
     // 에이전트(MCP 문)가 쓴 것은 무조건 초안으로만 남는다. 게시는 사람이 누른다.
-    beforeOperation: [agentDraftOnly],
+    beforeOperation: [agentDraftOnly<'posts'>()],
   },
   versions: {
     drafts: {
