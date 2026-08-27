@@ -1,4 +1,5 @@
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
+import { mcpPlugin } from '@payloadcms/plugin-mcp'
 import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 import { redirectsPlugin } from '@payloadcms/plugin-redirects'
 import { seoPlugin } from '@payloadcms/plugin-seo'
@@ -87,6 +88,16 @@ export const plugins: Plugin[] = [
       fields: ({ defaultFields }) => {
         return [...defaultFields, ...searchFields]
       },
+    },
+  }),
+  // MCP — 에이전트가 이 사이트에 말을 거는 문 (/api/mcp).
+  // ⚠️ 지금은 「읽기」만 연다. 쓰기(create/update/delete)는 승인 게이트가 아직 없어서 닫아 둔다.
+  //    권한은 관리자 화면에서 실시간으로 켜고 끌 수 있다.
+  mcpPlugin({
+    collections: {
+      categories: { enabled: { create: false, delete: false, find: true, update: false } },
+      pages: { enabled: { create: false, delete: false, find: true, update: false } },
+      posts: { enabled: { create: false, delete: false, find: true, update: false } },
     },
   }),
 ]

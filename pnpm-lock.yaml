@@ -2145,6 +2145,9 @@ importers:
       '@payloadcms/plugin-form-builder':
         specifier: workspace:*
         version: link:../../packages/plugin-form-builder
+      '@payloadcms/plugin-mcp':
+        specifier: workspace:*
+        version: link:../../packages/plugin-mcp
       '@payloadcms/plugin-nested-docs':
         specifier: workspace:*
         version: link:../../packages/plugin-nested-docs
