@@ -5,7 +5,7 @@ export const Page = async ({ params, searchParams }) => {
   const payload = await getPayload({
     config: configPromise,
   })
-  return <div>test ${payload?.config?.collections?.length}</div>
+  return <div>테스트 ${payload?.config?.collections?.length}</div>
 }
 
 export default Page
