@@ -122,17 +122,30 @@ export const plugins: Plugin[] = [
   // MCP — 에이전트가 이 사이트에 말을 거는 문 (/api/mcp).
   // ⚠️ 2026-08-28 이전에는 「읽기」만 열려 있었다. 승인 게이트가 없었기 때문이다.
   //    이제 게이트가 생겼다 — `agentDraftOnly`(저장 직전에 무조건 초안으로 되돌린다). 그래서 한 칸을 연다.
-  // ⚠️ 열려 있는 것은 `posts.create` 하나뿐이다 — 좁게 연다.
-  //    ⑴ `update` 는 안 연다: 이미 게시된 글의 상태를 되돌릴 길이 하나 늘어난다.
-  //    ⑵ `delete` 는 안 연다: 삭제에는 「초안」이 없어 되돌릴 방법이 없다(`agentDraftOnly` 도 던져서 막는다).
-  //    ⑶ 그리고 이 한 칸을 여는 것이 곧 시험이다 — 에이전트가 글을 쓸 수 있게 되어야
-  //       비로소 「초안 잠금이 실제로 먹는가」를 잰다. 열기 전에는 잴 문이 없었다.
+  // ⚠️ 쓰기는 `create` 만 연다 — `update`·`delete` 는 컬렉션 어디에도 안 연다.
+  //    ⑴ `update` 는 이미 게시된 글의 상태를 되돌릴 길이 하나 늘어난다.
+  //    ⑵ `delete` 는 「초안」이 없어 되돌릴 방법이 없다(`agentDraftOnly` 도 던져서 막는다).
+  //    ⑶ 그리고 여는 것 자체가 시험이다 — 쓸 수 있게 되어야 비로소 「잠금이 먹는가」를 잰다.
+  //
+  // ⚠️ 2026-08-28 (I차 3단계) — `pages.create` 와 `globals.header` 를 더 연다.
+  //    ⑴ `pages.create` : 게시판은 페이지 하나다. **Pages 에도 `agentDraftOnly` 가 걸려 있어**
+  //       posts 와 똑같이 초안으로 뒤집힌다. 게이트를 새로 지을 것이 없다.
+  //    ⑵ `globals.header.update` : 메뉴에 얹으려면 이 문이 있어야 한다.
+  //       ⚠️ **글로벌에는 「초안」이 없다.** 고치면 그 순간 손님 화면의 메뉴가 바뀐다.
+  //       그래도 게이트를 안 두는 이유 — 되돌리는 데 1분이고, 최악이 「메뉴는 있는데 내용이 없다」다.
+  //       ⚠️ **대신 update 는 메뉴를 통째로 덮어쓴다.** 시험 전 현재 메뉴를 기록해 둔다.
+  //       (2026-08-28 기준: `/posts`(Posts) · pages 참조(Contact) 두 개)
+  //    ⑶ `globals.header` 의 옆문은 그대로 막혀 있다 — `Header/config.ts` 의 `update: authenticated`.
+  //       MCP 문으로 들어온 요청만 통과한다(`isMcpApiKey` 주석 참고).
   // ⚠️ 소스만으로는 안 열린다 — 관리자 화면 `MCP → API Keys` 의 키별 토글이 이중 게이트다(기본 꺼짐).
   mcpPlugin({
     collections: {
       categories: { enabled: { create: false, delete: false, find: true, update: false } },
-      pages: { enabled: { create: false, delete: false, find: true, update: false } },
+      pages: { enabled: { create: true, delete: false, find: true, update: false } },
       posts: { enabled: { create: true, delete: false, find: true, update: false } },
+    },
+    globals: {
+      header: { enabled: { find: true, update: true } },
     },
   }),
   // ⚠️ MCP 키가 「자기 권한 설정」을 스스로 고치지 못하게 막는다.
