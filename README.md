@@ -149,3 +149,5 @@ There are lots of good conversations and resources in our Github Discussions boa
 ## 👏 Thanks to all our contributors
 
 <img align="left" src="https://contributors-img.web.app/image?repo=payloadcms/payload"/>
+
+<!-- harness worker probe 2026-08-29 -->
