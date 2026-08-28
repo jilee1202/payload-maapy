@@ -120,13 +120,19 @@ export const plugins: Plugin[] = [
     },
   }),
   // MCP — 에이전트가 이 사이트에 말을 거는 문 (/api/mcp).
-  // ⚠️ 지금은 「읽기」만 연다. 쓰기(create/update/delete)는 승인 게이트가 아직 없어서 닫아 둔다.
-  //    권한은 관리자 화면에서 실시간으로 켜고 끌 수 있다.
+  // ⚠️ 2026-08-28 이전에는 「읽기」만 열려 있었다. 승인 게이트가 없었기 때문이다.
+  //    이제 게이트가 생겼다 — `agentDraftOnly`(저장 직전에 무조건 초안으로 되돌린다). 그래서 한 칸을 연다.
+  // ⚠️ 열려 있는 것은 `posts.create` 하나뿐이다 — 좁게 연다.
+  //    ⑴ `update` 는 안 연다: 이미 게시된 글의 상태를 되돌릴 길이 하나 늘어난다.
+  //    ⑵ `delete` 는 안 연다: 삭제에는 「초안」이 없어 되돌릴 방법이 없다(`agentDraftOnly` 도 던져서 막는다).
+  //    ⑶ 그리고 이 한 칸을 여는 것이 곧 시험이다 — 에이전트가 글을 쓸 수 있게 되어야
+  //       비로소 「초안 잠금이 실제로 먹는가」를 잰다. 열기 전에는 잴 문이 없었다.
+  // ⚠️ 소스만으로는 안 열린다 — 관리자 화면 `MCP → API Keys` 의 키별 토글이 이중 게이트다(기본 꺼짐).
   mcpPlugin({
     collections: {
       categories: { enabled: { create: false, delete: false, find: true, update: false } },
       pages: { enabled: { create: false, delete: false, find: true, update: false } },
-      posts: { enabled: { create: false, delete: false, find: true, update: false } },
+      posts: { enabled: { create: true, delete: false, find: true, update: false } },
     },
   }),
   // ⚠️ MCP 키가 「자기 권한 설정」을 스스로 고치지 못하게 막는다.
