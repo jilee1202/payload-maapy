@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { authenticated } from '../../access/authenticated'
+import { agentDraftOnly } from '../../hooks/agentDraftOnly'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { Archive } from '../../blocks/ArchiveBlock/config'
 import { CallToAction } from '../../blocks/CallToAction/config'
@@ -123,6 +124,8 @@ export const Pages: CollectionConfig<'pages'> = {
     afterChange: [revalidatePage],
     beforeChange: [populatePublishedAt],
     afterDelete: [revalidateDelete],
+    // 에이전트(MCP 문)가 쓴 것은 무조건 초안으로만 남는다. 게시는 사람이 누른다.
+    beforeOperation: [agentDraftOnly<'pages'>()],
   },
   versions: {
     drafts: {

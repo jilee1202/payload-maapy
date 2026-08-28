@@ -10,6 +10,7 @@ import {
 } from '@payloadcms/richtext-lexical'
 
 import { authenticated } from '../../access/authenticated'
+import { agentDraftOnly } from '../../hooks/agentDraftOnly'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { Banner } from '../../blocks/Banner/config'
 import { Code } from '../../blocks/Code/config'
@@ -220,6 +221,8 @@ export const Posts: CollectionConfig<'posts'> = {
     afterChange: [revalidatePost],
     afterRead: [populateAuthors],
     afterDelete: [revalidateDelete],
+    // 에이전트(MCP 문)가 쓴 것은 무조건 초안으로만 남는다. 게시는 사람이 누른다.
+    beforeOperation: [agentDraftOnly<'posts'>()],
   },
   versions: {
     drafts: {
