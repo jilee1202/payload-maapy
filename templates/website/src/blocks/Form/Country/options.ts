@@ -1,982 +1,982 @@
 export const countryOptions = [
   {
-    label: 'Afghanistan',
+    label: '아프가니스탄',
     value: 'AF',
   },
   {
-    label: 'Åland Islands',
+    label: '올란드 제도',
     value: 'AX',
   },
   {
-    label: 'Albania',
+    label: '알바니아',
     value: 'AL',
   },
   {
-    label: 'Algeria',
+    label: '알제리',
     value: 'DZ',
   },
   {
-    label: 'American Samoa',
+    label: '아메리칸사모아',
     value: 'AS',
   },
   {
-    label: 'Andorra',
+    label: '안도라',
     value: 'AD',
   },
   {
-    label: 'Angola',
+    label: '앙골라',
     value: 'AO',
   },
   {
-    label: 'Anguilla',
+    label: '앵귈라',
     value: 'AI',
   },
   {
-    label: 'Antarctica',
+    label: '남극',
     value: 'AQ',
   },
   {
-    label: 'Antigua and Barbuda',
+    label: '앤티가 바부다',
     value: 'AG',
   },
   {
-    label: 'Argentina',
+    label: '아르헨티나',
     value: 'AR',
   },
   {
-    label: 'Armenia',
+    label: '아르메니아',
     value: 'AM',
   },
   {
-    label: 'Aruba',
+    label: '아루바',
     value: 'AW',
   },
   {
-    label: 'Australia',
+    label: '오스트레일리아',
     value: 'AU',
   },
   {
-    label: 'Austria',
+    label: '오스트리아',
     value: 'AT',
   },
   {
-    label: 'Azerbaijan',
+    label: '아제르바이잔',
     value: 'AZ',
   },
   {
-    label: 'Bahamas',
+    label: '바하마',
     value: 'BS',
   },
   {
-    label: 'Bahrain',
+    label: '바레인',
     value: 'BH',
   },
   {
-    label: 'Bangladesh',
+    label: '방글라데시',
     value: 'BD',
   },
   {
-    label: 'Barbados',
+    label: '바베이도스',
     value: 'BB',
   },
   {
-    label: 'Belarus',
+    label: '벨라루스',
     value: 'BY',
   },
   {
-    label: 'Belgium',
+    label: '벨기에',
     value: 'BE',
   },
   {
-    label: 'Belize',
+    label: '벨리즈',
     value: 'BZ',
   },
   {
-    label: 'Benin',
+    label: '베냉',
     value: 'BJ',
   },
   {
-    label: 'Bermuda',
+    label: '버뮤다',
     value: 'BM',
   },
   {
-    label: 'Bhutan',
+    label: '부탄',
     value: 'BT',
   },
   {
-    label: 'Bolivia',
+    label: '볼리비아',
     value: 'BO',
   },
   {
-    label: 'Bosnia and Herzegovina',
+    label: '보스니아 헤르체고비나',
     value: 'BA',
   },
   {
-    label: 'Botswana',
+    label: '보츠와나',
     value: 'BW',
   },
   {
-    label: 'Bouvet Island',
+    label: '부베 섬',
     value: 'BV',
   },
   {
-    label: 'Brazil',
+    label: '브라질',
     value: 'BR',
   },
   {
-    label: 'British Indian Ocean Territory',
+    label: '영국령 인도양 지역',
     value: 'IO',
   },
   {
-    label: 'Brunei Darussalam',
+    label: '브루나이',
     value: 'BN',
   },
   {
-    label: 'Bulgaria',
+    label: '불가리아',
     value: 'BG',
   },
   {
-    label: 'Burkina Faso',
+    label: '부르키나파소',
     value: 'BF',
   },
   {
-    label: 'Burundi',
+    label: '부룬디',
     value: 'BI',
   },
   {
-    label: 'Cambodia',
+    label: '캄보디아',
     value: 'KH',
   },
   {
-    label: 'Cameroon',
+    label: '카메룬',
     value: 'CM',
   },
   {
-    label: 'Canada',
+    label: '캐나다',
     value: 'CA',
   },
   {
-    label: 'Cape Verde',
+    label: '카보베르데',
     value: 'CV',
   },
   {
-    label: 'Cayman Islands',
+    label: '케이맨 제도',
     value: 'KY',
   },
   {
-    label: 'Central African Republic',
+    label: '중앙아프리카 공화국',
     value: 'CF',
   },
   {
-    label: 'Chad',
+    label: '차드',
     value: 'TD',
   },
   {
-    label: 'Chile',
+    label: '칠레',
     value: 'CL',
   },
   {
-    label: 'China',
+    label: '중국',
     value: 'CN',
   },
   {
-    label: 'Christmas Island',
+    label: '크리스마스 섬',
     value: 'CX',
   },
   {
-    label: 'Cocos (Keeling) Islands',
+    label: '코코스 제도',
     value: 'CC',
   },
   {
-    label: 'Colombia',
+    label: '콜롬비아',
     value: 'CO',
   },
   {
-    label: 'Comoros',
+    label: '코모로',
     value: 'KM',
   },
   {
-    label: 'Congo',
+    label: '콩고 공화국',
     value: 'CG',
   },
   {
-    label: 'Congo, The Democratic Republic of the',
+    label: '콩고 민주 공화국',
     value: 'CD',
   },
   {
-    label: 'Cook Islands',
+    label: '쿡 제도',
     value: 'CK',
   },
   {
-    label: 'Costa Rica',
+    label: '코스타리카',
     value: 'CR',
   },
   {
-    label: "Cote D'Ivoire",
+    label: '코트디부아르',
     value: 'CI',
   },
   {
-    label: 'Croatia',
+    label: '크로아티아',
     value: 'HR',
   },
   {
-    label: 'Cuba',
+    label: '쿠바',
     value: 'CU',
   },
   {
-    label: 'Cyprus',
+    label: '키프로스',
     value: 'CY',
   },
   {
-    label: 'Czech Republic',
+    label: '체코',
     value: 'CZ',
   },
   {
-    label: 'Denmark',
+    label: '덴마크',
     value: 'DK',
   },
   {
-    label: 'Djibouti',
+    label: '지부티',
     value: 'DJ',
   },
   {
-    label: 'Dominica',
+    label: '도미니카',
     value: 'DM',
   },
   {
-    label: 'Dominican Republic',
+    label: '도미니카 공화국',
     value: 'DO',
   },
   {
-    label: 'Ecuador',
+    label: '에콰도르',
     value: 'EC',
   },
   {
-    label: 'Egypt',
+    label: '이집트',
     value: 'EG',
   },
   {
-    label: 'El Salvador',
+    label: '엘살바도르',
     value: 'SV',
   },
   {
-    label: 'Equatorial Guinea',
+    label: '적도 기니',
     value: 'GQ',
   },
   {
-    label: 'Eritrea',
+    label: '에리트레아',
     value: 'ER',
   },
   {
-    label: 'Estonia',
+    label: '에스토니아',
     value: 'EE',
   },
   {
-    label: 'Ethiopia',
+    label: '에티오피아',
     value: 'ET',
   },
   {
-    label: 'Falkland Islands (Malvinas)',
+    label: '포클랜드 제도',
     value: 'FK',
   },
   {
-    label: 'Faroe Islands',
+    label: '페로 제도',
     value: 'FO',
   },
   {
-    label: 'Fiji',
+    label: '피지',
     value: 'FJ',
   },
   {
-    label: 'Finland',
+    label: '핀란드',
     value: 'FI',
   },
   {
-    label: 'France',
+    label: '프랑스',
     value: 'FR',
   },
   {
-    label: 'French Guiana',
+    label: '프랑스령 기아나',
     value: 'GF',
   },
   {
-    label: 'French Polynesia',
+    label: '프랑스령 폴리네시아',
     value: 'PF',
   },
   {
-    label: 'French Southern Territories',
+    label: '프랑스령 남방 및 남극 지역',
     value: 'TF',
   },
   {
-    label: 'Gabon',
+    label: '가봉',
     value: 'GA',
   },
   {
-    label: 'Gambia',
+    label: '감비아',
     value: 'GM',
   },
   {
-    label: 'Georgia',
+    label: '조지아',
     value: 'GE',
   },
   {
-    label: 'Germany',
+    label: '독일',
     value: 'DE',
   },
   {
-    label: 'Ghana',
+    label: '가나',
     value: 'GH',
   },
   {
-    label: 'Gibraltar',
+    label: '지브롤터',
     value: 'GI',
   },
   {
-    label: 'Greece',
+    label: '그리스',
     value: 'GR',
   },
   {
-    label: 'Greenland',
+    label: '그린란드',
     value: 'GL',
   },
   {
-    label: 'Grenada',
+    label: '그레나다',
     value: 'GD',
   },
   {
-    label: 'Guadeloupe',
+    label: '과들루프',
     value: 'GP',
   },
   {
-    label: 'Guam',
+    label: '괌',
     value: 'GU',
   },
   {
-    label: 'Guatemala',
+    label: '과테말라',
     value: 'GT',
   },
   {
-    label: 'Guernsey',
+    label: '건지',
     value: 'GG',
   },
   {
-    label: 'Guinea',
+    label: '기니',
     value: 'GN',
   },
   {
-    label: 'Guinea-Bissau',
+    label: '기니비사우',
     value: 'GW',
   },
   {
-    label: 'Guyana',
+    label: '가이아나',
     value: 'GY',
   },
   {
-    label: 'Haiti',
+    label: '아이티',
     value: 'HT',
   },
   {
-    label: 'Heard Island and Mcdonald Islands',
+    label: '허드 맥도널드 제도',
     value: 'HM',
   },
   {
-    label: 'Holy See (Vatican City State)',
+    label: '바티칸',
     value: 'VA',
   },
   {
-    label: 'Honduras',
+    label: '온두라스',
     value: 'HN',
   },
   {
-    label: 'Hong Kong',
+    label: '홍콩',
     value: 'HK',
   },
   {
-    label: 'Hungary',
+    label: '헝가리',
     value: 'HU',
   },
   {
-    label: 'Iceland',
+    label: '아이슬란드',
     value: 'IS',
   },
   {
-    label: 'India',
+    label: '인도',
     value: 'IN',
   },
   {
-    label: 'Indonesia',
+    label: '인도네시아',
     value: 'ID',
   },
   {
-    label: 'Iran, Islamic Republic Of',
+    label: '이란',
     value: 'IR',
   },
   {
-    label: 'Iraq',
+    label: '이라크',
     value: 'IQ',
   },
   {
-    label: 'Ireland',
+    label: '아일랜드',
     value: 'IE',
   },
   {
-    label: 'Isle of Man',
+    label: '맨 섬',
     value: 'IM',
   },
   {
-    label: 'Israel',
+    label: '이스라엘',
     value: 'IL',
   },
   {
-    label: 'Italy',
+    label: '이탈리아',
     value: 'IT',
   },
   {
-    label: 'Jamaica',
+    label: '자메이카',
     value: 'JM',
   },
   {
-    label: 'Japan',
+    label: '일본',
     value: 'JP',
   },
   {
-    label: 'Jersey',
+    label: '저지',
     value: 'JE',
   },
   {
-    label: 'Jordan',
+    label: '요르단',
     value: 'JO',
   },
   {
-    label: 'Kazakhstan',
+    label: '카자흐스탄',
     value: 'KZ',
   },
   {
-    label: 'Kenya',
+    label: '케냐',
     value: 'KE',
   },
   {
-    label: 'Kiribati',
+    label: '키리바시',
     value: 'KI',
   },
   {
-    label: "Democratic People's Republic of Korea",
+    label: '조선민주주의인민공화국',
     value: 'KP',
   },
   {
-    label: 'Korea, Republic of',
+    label: '대한민국',
     value: 'KR',
   },
   {
-    label: 'Kosovo',
+    label: '코소보',
     value: 'XK',
   },
   {
-    label: 'Kuwait',
+    label: '쿠웨이트',
     value: 'KW',
   },
   {
-    label: 'Kyrgyzstan',
+    label: '키르기스스탄',
     value: 'KG',
   },
   {
-    label: "Lao People's Democratic Republic",
+    label: '라오스',
     value: 'LA',
   },
   {
-    label: 'Latvia',
+    label: '라트비아',
     value: 'LV',
   },
   {
-    label: 'Lebanon',
+    label: '레바논',
     value: 'LB',
   },
   {
-    label: 'Lesotho',
+    label: '레소토',
     value: 'LS',
   },
   {
-    label: 'Liberia',
+    label: '라이베리아',
     value: 'LR',
   },
   {
-    label: 'Libyan Arab Jamahiriya',
+    label: '리비아',
     value: 'LY',
   },
   {
-    label: 'Liechtenstein',
+    label: '리히텐슈타인',
     value: 'LI',
   },
   {
-    label: 'Lithuania',
+    label: '리투아니아',
     value: 'LT',
   },
   {
-    label: 'Luxembourg',
+    label: '룩셈부르크',
     value: 'LU',
   },
   {
-    label: 'Macao',
+    label: '마카오',
     value: 'MO',
   },
   {
-    label: 'Macedonia, The Former Yugoslav Republic of',
+    label: '북마케도니아',
     value: 'MK',
   },
   {
-    label: 'Madagascar',
+    label: '마다가스카르',
     value: 'MG',
   },
   {
-    label: 'Malawi',
+    label: '말라위',
     value: 'MW',
   },
   {
-    label: 'Malaysia',
+    label: '말레이시아',
     value: 'MY',
   },
   {
-    label: 'Maldives',
+    label: '몰디브',
     value: 'MV',
   },
   {
-    label: 'Mali',
+    label: '말리',
     value: 'ML',
   },
   {
-    label: 'Malta',
+    label: '몰타',
     value: 'MT',
   },
   {
-    label: 'Marshall Islands',
+    label: '마셜 제도',
     value: 'MH',
   },
   {
-    label: 'Martinique',
+    label: '마르티니크',
     value: 'MQ',
   },
   {
-    label: 'Mauritania',
+    label: '모리타니',
     value: 'MR',
   },
   {
-    label: 'Mauritius',
+    label: '모리셔스',
     value: 'MU',
   },
   {
-    label: 'Mayotte',
+    label: '마요트',
     value: 'YT',
   },
   {
-    label: 'Mexico',
+    label: '멕시코',
     value: 'MX',
   },
   {
-    label: 'Micronesia, Federated States of',
+    label: '미크로네시아',
     value: 'FM',
   },
   {
-    label: 'Moldova, Republic of',
+    label: '몰도바',
     value: 'MD',
   },
   {
-    label: 'Monaco',
+    label: '모나코',
     value: 'MC',
   },
   {
-    label: 'Mongolia',
+    label: '몽골',
     value: 'MN',
   },
   {
-    label: 'Montenegro',
+    label: '몬테네그로',
     value: 'ME',
   },
   {
-    label: 'Montserrat',
+    label: '몬트세랫',
     value: 'MS',
   },
   {
-    label: 'Morocco',
+    label: '모로코',
     value: 'MA',
   },
   {
-    label: 'Mozambique',
+    label: '모잠비크',
     value: 'MZ',
   },
   {
-    label: 'Myanmar',
+    label: '미얀마',
     value: 'MM',
   },
   {
-    label: 'Namibia',
+    label: '나미비아',
     value: 'NA',
   },
   {
-    label: 'Nauru',
+    label: '나우루',
     value: 'NR',
   },
   {
-    label: 'Nepal',
+    label: '네팔',
     value: 'NP',
   },
   {
-    label: 'Netherlands',
+    label: '네덜란드',
     value: 'NL',
   },
   {
-    label: 'Netherlands Antilles',
+    label: '네덜란드령 안틸레스',
     value: 'AN',
   },
   {
-    label: 'New Caledonia',
+    label: '뉴칼레도니아',
     value: 'NC',
   },
   {
-    label: 'New Zealand',
+    label: '뉴질랜드',
     value: 'NZ',
   },
   {
-    label: 'Nicaragua',
+    label: '니카라과',
     value: 'NI',
   },
   {
-    label: 'Niger',
+    label: '니제르',
     value: 'NE',
   },
   {
-    label: 'Nigeria',
+    label: '나이지리아',
     value: 'NG',
   },
   {
-    label: 'Niue',
+    label: '니우에',
     value: 'NU',
   },
   {
-    label: 'Norfolk Island',
+    label: '노퍽 섬',
     value: 'NF',
   },
   {
-    label: 'Northern Mariana Islands',
+    label: '북마리아나 제도',
     value: 'MP',
   },
   {
-    label: 'Norway',
+    label: '노르웨이',
     value: 'NO',
   },
   {
-    label: 'Oman',
+    label: '오만',
     value: 'OM',
   },
   {
-    label: 'Pakistan',
+    label: '파키스탄',
     value: 'PK',
   },
   {
-    label: 'Palau',
+    label: '팔라우',
     value: 'PW',
   },
   {
-    label: 'Palestinian Territory, Occupied',
+    label: '팔레스타인',
     value: 'PS',
   },
   {
-    label: 'Panama',
+    label: '파나마',
     value: 'PA',
   },
   {
-    label: 'Papua New Guinea',
+    label: '파푸아뉴기니',
     value: 'PG',
   },
   {
-    label: 'Paraguay',
+    label: '파라과이',
     value: 'PY',
   },
   {
-    label: 'Peru',
+    label: '페루',
     value: 'PE',
   },
   {
-    label: 'Philippines',
+    label: '필리핀',
     value: 'PH',
   },
   {
-    label: 'Pitcairn',
+    label: '핏케언 제도',
     value: 'PN',
   },
   {
-    label: 'Poland',
+    label: '폴란드',
     value: 'PL',
   },
   {
-    label: 'Portugal',
+    label: '포르투갈',
     value: 'PT',
   },
   {
-    label: 'Puerto Rico',
+    label: '푸에르토리코',
     value: 'PR',
   },
   {
-    label: 'Qatar',
+    label: '카타르',
     value: 'QA',
   },
   {
-    label: 'Reunion',
+    label: '레위니옹',
     value: 'RE',
   },
   {
-    label: 'Romania',
+    label: '루마니아',
     value: 'RO',
   },
   {
-    label: 'Russian Federation',
+    label: '러시아',
     value: 'RU',
   },
   {
-    label: 'Rwanda',
+    label: '르완다',
     value: 'RW',
   },
   {
-    label: 'Saint Helena',
+    label: '세인트헬레나',
     value: 'SH',
   },
   {
-    label: 'Saint Kitts and Nevis',
+    label: '세인트키츠 네비스',
     value: 'KN',
   },
   {
-    label: 'Saint Lucia',
+    label: '세인트루시아',
     value: 'LC',
   },
   {
-    label: 'Saint Pierre and Miquelon',
+    label: '생피에르 미클롱',
     value: 'PM',
   },
   {
-    label: 'Saint Vincent and the Grenadines',
+    label: '세인트빈센트 그레나딘',
     value: 'VC',
   },
   {
-    label: 'Samoa',
+    label: '사모아',
     value: 'WS',
   },
   {
-    label: 'San Marino',
+    label: '산마리노',
     value: 'SM',
   },
   {
-    label: 'Sao Tome and Principe',
+    label: '상투메 프린시페',
     value: 'ST',
   },
   {
-    label: 'Saudi Arabia',
+    label: '사우디아라비아',
     value: 'SA',
   },
   {
-    label: 'Senegal',
+    label: '세네갈',
     value: 'SN',
   },
   {
-    label: 'Serbia',
+    label: '세르비아',
     value: 'RS',
   },
   {
-    label: 'Seychelles',
+    label: '세이셸',
     value: 'SC',
   },
   {
-    label: 'Sierra Leone',
+    label: '시에라리온',
     value: 'SL',
   },
   {
-    label: 'Singapore',
+    label: '싱가포르',
     value: 'SG',
   },
   {
-    label: 'Slovakia',
+    label: '슬로바키아',
     value: 'SK',
   },
   {
-    label: 'Slovenia',
+    label: '슬로베니아',
     value: 'SI',
   },
   {
-    label: 'Solomon Islands',
+    label: '솔로몬 제도',
     value: 'SB',
   },
   {
-    label: 'Somalia',
+    label: '소말리아',
     value: 'SO',
   },
   {
-    label: 'South Africa',
+    label: '남아프리카 공화국',
     value: 'ZA',
   },
   {
-    label: 'South Georgia and the South Sandwich Islands',
+    label: '사우스조지아 사우스샌드위치 제도',
     value: 'GS',
   },
   {
-    label: 'Spain',
+    label: '스페인',
     value: 'ES',
   },
   {
-    label: 'Sri Lanka',
+    label: '스리랑카',
     value: 'LK',
   },
   {
-    label: 'Sudan',
+    label: '수단',
     value: 'SD',
   },
   {
-    label: 'Suriname',
+    label: '수리남',
     value: 'SR',
   },
   {
-    label: 'Svalbard and Jan Mayen',
+    label: '스발바르 얀마옌',
     value: 'SJ',
   },
   {
-    label: 'Swaziland',
+    label: '에스와티니',
     value: 'SZ',
   },
   {
-    label: 'Sweden',
+    label: '스웨덴',
     value: 'SE',
   },
   {
-    label: 'Switzerland',
+    label: '스위스',
     value: 'CH',
   },
   {
-    label: 'Syrian Arab Republic',
+    label: '시리아',
     value: 'SY',
   },
   {
-    label: 'Taiwan',
+    label: '타이완',
     value: 'TW',
   },
   {
-    label: 'Tajikistan',
+    label: '타지키스탄',
     value: 'TJ',
   },
   {
-    label: 'Tanzania, United Republic of',
+    label: '탄자니아',
     value: 'TZ',
   },
   {
-    label: 'Thailand',
+    label: '태국',
     value: 'TH',
   },
   {
-    label: 'Timor-Leste',
+    label: '동티모르',
     value: 'TL',
   },
   {
-    label: 'Togo',
+    label: '토고',
     value: 'TG',
   },
   {
-    label: 'Tokelau',
+    label: '토켈라우',
     value: 'TK',
   },
   {
-    label: 'Tonga',
+    label: '통가',
     value: 'TO',
   },
   {
-    label: 'Trinidad and Tobago',
+    label: '트리니다드 토바고',
     value: 'TT',
   },
   {
-    label: 'Tunisia',
+    label: '튀니지',
     value: 'TN',
   },
   {
-    label: 'Turkey',
+    label: '튀르키예',
     value: 'TR',
   },
   {
-    label: 'Turkmenistan',
+    label: '투르크메니스탄',
     value: 'TM',
   },
   {
-    label: 'Turks and Caicos Islands',
+    label: '터크스 케이커스 제도',
     value: 'TC',
   },
   {
-    label: 'Tuvalu',
+    label: '투발루',
     value: 'TV',
   },
   {
-    label: 'Uganda',
+    label: '우간다',
     value: 'UG',
   },
   {
-    label: 'Ukraine',
+    label: '우크라이나',
     value: 'UA',
   },
   {
-    label: 'United Arab Emirates',
+    label: '아랍에미리트',
     value: 'AE',
   },
   {
-    label: 'United Kingdom',
+    label: '영국',
     value: 'GB',
   },
   {
-    label: 'United States',
+    label: '미국',
     value: 'US',
   },
   {
-    label: 'United States Minor Outlying Islands',
+    label: '미국령 군소 제도',
     value: 'UM',
   },
   {
-    label: 'Uruguay',
+    label: '우루과이',
     value: 'UY',
   },
   {
-    label: 'Uzbekistan',
+    label: '우즈베키스탄',
     value: 'UZ',
   },
   {
-    label: 'Vanuatu',
+    label: '바누아투',
     value: 'VU',
   },
   {
-    label: 'Venezuela',
+    label: '베네수엘라',
     value: 'VE',
   },
   {
-    label: 'Viet Nam',
+    label: '베트남',
     value: 'VN',
   },
   {
-    label: 'Virgin Islands, British',
+    label: '영국령 버진아일랜드',
     value: 'VG',
   },
   {
-    label: 'Virgin Islands, U.S.',
+    label: '미국령 버진아일랜드',
     value: 'VI',
   },
   {
-    label: 'Wallis and Futuna',
+    label: '왈리스 푸투나',
     value: 'WF',
   },
   {
-    label: 'Western Sahara',
+    label: '서사하라',
     value: 'EH',
   },
   {
-    label: 'Yemen',
+    label: '예멘',
     value: 'YE',
   },
   {
-    label: 'Zambia',
+    label: '잠비아',
     value: 'ZM',
   },
   {
-    label: 'Zimbabwe',
+    label: '짐바브웨',
     value: 'ZW',
   },
 ]

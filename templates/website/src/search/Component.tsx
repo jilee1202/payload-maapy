@@ -23,17 +23,17 @@ export const Search: React.FC = () => {
         }}
       >
         <Label htmlFor="search" className="sr-only">
-          Search
+          검색
         </Label>
         <Input
           id="search"
           onChange={(event) => {
             setValue(event.target.value)
           }}
-          placeholder="Search"
+          placeholder="검색어를 입력하세요"
         />
         <button type="submit" className="sr-only">
-          submit
+          검색
         </button>
       </form>
     </div>
